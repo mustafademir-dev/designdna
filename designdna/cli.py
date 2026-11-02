@@ -16,7 +16,7 @@ from designdna import __version__
 from designdna.cache import CacheStore, load_capture_file
 from designdna.errors import CacheMissError, DesignDNAError
 from designdna.models import BlendReport, RawCapture, SourceSpec
-from designdna.sources import is_capture_file, parse_source, source_to_path
+from designdna.sources import display_source, is_capture_file, parse_source, source_to_path
 
 app = typer.Typer(
     name="designdna",
@@ -26,7 +26,7 @@ app = typer.Typer(
 )
 
 SourceOpt = typer.Option(
-    ...,
+    None,
     "--source",
     "-s",
     help='Kaynak: URL veya dosya yolu, isteğe bağlı ağırlıkla. Örn: "https://site.com@0.7"',
@@ -62,7 +62,9 @@ def _guarded(func: Callable[[], None]) -> None:
         ) from exc
 
 
-def _parse_all(sources: list[str]) -> list[SourceSpec]:
+def _parse_all(sources: list[str] | None) -> list[SourceSpec]:
+    if not sources:
+        raise DesignDNAError("En az bir --source verilmeli. Örnek: --source \"https://site.com@0.7\"")
     return [parse_source(s) for s in sources]
 
 
@@ -99,7 +101,7 @@ def _extract(specs: list[SourceSpec], store: CacheStore, refresh: bool, console:
     ) as progress:
         task = progress.add_task("Kaynaklar taranıyor", total=len(specs))
         for spec in specs:
-            progress.update(task, description=f"Taranıyor: {spec.location}")
+            progress.update(task, description=f"Taranıyor: {display_source(spec.location)}")
             if is_capture_file(spec):
                 status = "atlandı (hazır çıkarım .json)"
             elif not refresh and store.has(spec.location):
@@ -110,7 +112,7 @@ def _extract(specs: list[SourceSpec], store: CacheStore, refresh: bool, console:
                     capture = capture.model_copy(update={"source": spec.location})
                 store.save_capture(capture)
                 status = "tarandı"
-            table.add_row(spec.location, status)
+            table.add_row(display_source(spec.location), status)
             progress.advance(task)
     console.print(table)
 
@@ -171,7 +173,7 @@ def _print_summary(report: BlendReport, files: list[Path], output: Path, console
     sources.add_column("Rol alabilir")
     for s in report.sources:
         given = "-" if s.input_weight is None else f"{s.input_weight:g}"
-        sources.add_row(s.source, given, f"{s.normalized_weight:.2f}", "evet" if s.eligible else "hayır")
+        sources.add_row(display_source(s.source), given, f"{s.normalized_weight:.2f}", "evet" if s.eligible else "hayır")
     console.print(sources)
 
     roles = Table(title="Roller")
@@ -179,7 +181,7 @@ def _print_summary(report: BlendReport, files: list[Path], output: Path, console
     roles.add_column("Kaynak", overflow="fold")
     roles.add_column("Gerekçe", overflow="fold")
     for r in report.roles:
-        roles.add_row(r.role, r.source, r.reason)
+        roles.add_row(r.role, display_source(r.source), r.reason)
     console.print(roles)
 
     if report.contrast_fixes:
@@ -231,7 +233,7 @@ def main(
 
 @app.command()
 def extract(
-    source: list[str] = SourceOpt,
+    source: Optional[list[str]] = SourceOpt,
     refresh: bool = RefreshOpt,
     cache_dir: Optional[Path] = CacheOpt,
 ) -> None:
@@ -245,7 +247,7 @@ def extract(
 
 @app.command()
 def blend(
-    source: list[str] = SourceOpt,
+    source: Optional[list[str]] = SourceOpt,
     output: Path = OutputOpt,
     cache_dir: Optional[Path] = CacheOpt,
 ) -> None:
@@ -259,7 +261,7 @@ def blend(
 
 @app.command()
 def run(
-    source: list[str] = SourceOpt,
+    source: Optional[list[str]] = SourceOpt,
     output: Path = OutputOpt,
     refresh: bool = RefreshOpt,
     cache_dir: Optional[Path] = CacheOpt,

@@ -68,10 +68,25 @@ def test_posix_absolute_roundtrip(tmp_path: Path) -> None:
     assert source_to_path(s) == p.resolve()
 
 
-@pytest.mark.parametrize("text", ["https://x.com@0", "https://x.com@0.0", r"C:\a.html@0"])
-def test_zero_weight_rejected(text: str) -> None:
-    with pytest.raises(SourceParseError):
-        parse_source(text)
+@pytest.mark.parametrize("text", ["https://x.com@0", "https://x.com@0.0", "https://x.com/a@0"])
+def test_zero_weight_is_part_of_location(text: str) -> None:
+    # spec §6: '@' sonrası pozitif sayı değilse '@' konumun parçasıdır.
+    s = parse_source(text)
+    assert s.weight is None and s.location == text
+
+
+def test_zero_weight_windows_path() -> None:
+    s = parse_source(r"C:\a.html@0")
+    assert s.weight is None and s.location == "file:///C:/a.html@0"
+
+
+def test_display_source() -> None:
+    from designdna.sources import display_source
+
+    assert display_source("file:///home/u/my%20dir/a.html") == "a.html"
+    assert display_source("fixture://a.html") == "a.html"
+    assert display_source("https://x.com/p") == "https://x.com/p"
+    assert display_source("http://x.com") == "http://x.com"
 
 
 def test_negative_is_not_a_weight() -> None:

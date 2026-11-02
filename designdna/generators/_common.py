@@ -192,3 +192,44 @@ COLOR_ROLES = (
     "background", "surface", "text_primary", "text_muted", "accent", "accent_foreground",
     "border", "secondary", "secondary_foreground", "destructive", "destructive_foreground", "ring",
 )
+
+
+_MATRIX_RE = re.compile(r"matrix\(\s*([^)]*?)\s*\)")
+
+
+def _fmt_matrix(m: re.Match[str]) -> str:
+    try:
+        v = [float(p) for p in m.group(1).split(",")]
+    except ValueError:
+        return m.group(0)
+    if len(v) != 6:
+        return m.group(0)
+    a, b, c, d, tx, ty = v
+    if b != 0 or c != 0:
+        return m.group(0)
+    parts = []
+    if tx != 0 or ty != 0:
+        parts.append(f"translate({px(tx)}, {px(ty)})")
+    if a != 1 or d != 1:
+        parts.append(f"scale({num(a)})" if a == d else f"scale({num(a)}, {num(d)})")
+    return " ".join(parts) if parts else "none"
+
+
+def readable_transform(value: str) -> str:
+    """`matrix(1,0,0,1,tx,ty)` -> `translate(txpx, typx)`; okunur/çözülemeyen değerler olduğu gibi."""
+    return _MATRIX_RE.sub(_fmt_matrix, value)
+
+
+def article(number: str) -> str:
+    """'a'/'an' seçimi: sayının okunuşuna göre (8, 11, 18, 80-89, 800...)."""
+    m = re.match(r"-?(\d+)", number.strip())
+    if not m:
+        return "a"
+    s = m.group(1).lstrip("0") or "0"
+    if s[0] == "8" or (len(s) % 3 == 2 and s[:2] in ("11", "18")):
+        return "an"
+    return "a"
+
+
+def plural(n: int, singular: str) -> str:
+    return f"{n} {singular}" if n == 1 else f"{n} {singular}s"

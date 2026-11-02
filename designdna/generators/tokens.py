@@ -34,7 +34,7 @@ def build_tokens(ds: DesignSystem) -> dict[str, Any]:
         "size": {k: _t(px(v), "dimension") for k, v in sorted_sizes(ds)},
         "weight": {k: _t(int(v), "fontWeight") for k, v in sorted(ty.weights.items(), key=lambda kv: (kv[1], kv[0]))},
         "lineHeight": {k: _t(float(v), "number") for k, v in sorted(ty.line_heights.items(), key=lambda kv: (kv[1], kv[0]))},
-        "letterSpacing": {k: _t(f"{num(v)}em", "dimension") for k, v in sorted(ty.letter_spacing.items(), key=lambda kv: (kv[1], kv[0]))},
+        "letterSpacing": {k: {**_t(float(v), "number"), "$description": "Letter spacing in em units"} for k, v in sorted(ty.letter_spacing.items(), key=lambda kv: (kv[1], kv[0]))},
     }
     tree["spacing"] = {k: _t(px(v), "dimension") for k, v in sorted_spacing(ds)}
     tree["radius"] = {k: _t(px(v), "dimension") for k, v in sorted(ds.radius.items(), key=lambda kv: (kv[1], kv[0]))}

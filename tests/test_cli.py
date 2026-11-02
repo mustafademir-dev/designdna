@@ -89,11 +89,25 @@ def test_blend_missing_cache_fails(tmp_path: Path) -> None:
 
 
 def test_invalid_weight_fails(tmp_path: Path) -> None:
-    result = runner.invoke(
-        app, ["blend", "--source", "https://x.com@0", "-o", str(tmp_path / "d")]
-    )
+    # '@0' pozitif ağırlık değildir (konumun parçası, spec §6); konumsuz ağırlık hata verir.
+    result = runner.invoke(app, ["blend", "--source", "@0.5", "-o", str(tmp_path / "d")])
     assert result.exit_code != 0
-    assert "Ağırlık" in result.output
+    assert "Kaynak konumu eksik" in result.output
+
+
+@pytest.mark.parametrize("cmd", ["extract", "blend", "run"])
+def test_missing_source_turkish_error(cmd: str) -> None:
+    result = runner.invoke(app, [cmd])
+    assert result.exit_code != 0
+    assert "En az bir --source verilmeli" in result.output
+    assert "Missing option" not in result.output
+
+
+def test_summary_uses_display_names(tmp_path: Path) -> None:
+    result = runner.invoke(app, _json_args(tmp_path / "out"))
+    assert result.exit_code == 0
+    assert "file://" not in result.output
+    assert "neo_brutalist" in result.output
 
 
 def _patch_capture(monkeypatch: pytest.MonkeyPatch) -> list[str]:

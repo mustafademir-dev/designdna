@@ -7,8 +7,10 @@ import re
 from designdna.models import DesignSystem
 
 from ._common import (
-    COLOR_ROLES, kebab, num, px, render, sorted_sizes, sorted_spacing,
+    COLOR_ROLES, article, kebab, num, plural, px, readable_transform, render,
+    sorted_sizes, sorted_spacing,
 )
+from designdna.sources import display_source
 
 MAX_LINES = 300
 MAX_SOURCES = 20
@@ -34,7 +36,7 @@ def build_rules(ds: DesignSystem) -> list[dict[str, str]]:
             continue
         n = st.count
         if st.with_border >= 0.5 and spec.border_width_px > 0:
-            add("Do", f"Give {name}s a {px(spec.border_width_px)} {spec.border_style} border (`--color-border`)",
+            add("Do", f"Give {name}s {article(px(spec.border_width_px))} {px(spec.border_width_px)} {spec.border_style} border (`--color-border`)",
                 f"{_pct(st.with_border)} of {n} sampled {name}s have a border")
         elif st.with_border <= 0.2:
             add("Don't", f"Don't add borders to {name}s",
@@ -52,37 +54,52 @@ def build_rules(ds: DesignSystem) -> list[dict[str, str]]:
         if total > 0:
             k, v = sorted(st.radius_values.items(), key=lambda kv: (-kv[1], kv[0]))[0]
             add("Do", f"Round {name}s with {k}px corners",
-                f"{v} of {total} ({_pct(v / total)}) sampled {name}s use a {k}px radius")
+                f"{v} of {total} ({_pct(v / total)}) sampled {name}s use {article(str(k))} {k}px radius")
 
     sh = ds.shadows
+    shadowed = [
+        (n, getattr(ds.components, n)) for n in ("button", "input", "card")
+        if getattr(ds.components, n).stats is not None
+        and getattr(ds.components, n).stats.count > 0
+        and getattr(ds.components, n).stats.with_shadow >= 0.5
+        and getattr(ds.components, n).shadow != "none"
+    ]
     if sh.style == "none":
-        total = sum(c.stats.count for c in (ds.components.button, ds.components.input, ds.components.card) if c.stats)
-        add("Don't", "Don't introduce shadows; separate surfaces with borders and color",
-            f"shadow style classified as `none` across {total} sampled components")
-    else:
-        add("Do", f"Keep a {sh.style} shadow character; elevate with `--shadow-sm/md/lg`",
-            f"shadow style classified `{sh.style}`; md = `{sh.md}`")
+        if not shadowed:
+            total = sum(c.stats.count for c in (ds.components.button, ds.components.input, ds.components.card) if c.stats)
+            add("Don't", "Don't introduce shadows; separate surfaces with borders and color",
+                f"shadow style classified as `none` across {total} sampled components")
+    elif shadowed:
+        names = " and ".join(f"{n}s" for n, _ in shadowed)
+        ev = ", ".join(f"{_pct(c.stats.with_shadow)} of {c.stats.count} sampled {n}s" for n, c in shadowed)
+        add("Do", f"Keep a {sh.style} shadow character on {names}; elevate with `--shadow-sm/md/lg`",
+            f"shadow style classified `{sh.style}`; {ev} have a shadow; md = `{sh.md}`")
 
     btn = ds.components.button
     h = btn.hover
     if h is not None and h.samples > 0:
         if h.transform:
-            add("Do", f"On button hover apply `{h.transform}`",
+            add("Do", f"On button hover apply `{readable_transform(h.transform)}`",
                 f"transform observed in {h.samples} hover-probed buttons")
         else:
             add("Don't", "Don't move or scale buttons on hover",
                 f"0 of {h.samples} hover-probed buttons changed transform")
         if h.shadow_changes:
             add("Do", "Change the shadow on button hover", f"shadow changed in {h.samples} hover-probed buttons")
-    if ds.motion.duration_ms > 0:
+    if ds.motion.measured and ds.motion.duration_ms > 0:
         add("Do", f"Transition with `{num(ds.motion.duration_ms)}ms {ds.motion.easing}`",
             f"dominant transition duration measured at {num(ds.motion.duration_ms)}ms")
     if ds.spacing:
         mx = max(ds.spacing.values())
         add("Do", f"Space elements in multiples of {ds.spacing_base}px (`--spacing-*`)",
             f"{len(ds.spacing)} scale steps on a {ds.spacing_base}px grid, up to {num(mx)}px")
-    add("Do", f"Constrain page content to {num(ds.layout.container_max_width)}px",
-        f"container max-width measured at {num(ds.layout.container_max_width)}px, {ds.layout.grid_columns}-column grids")
+    if ds.layout.container_measured:
+        grid = (f", {ds.layout.grid_columns}-column grids" if ds.layout.grid_measured else "")
+        add("Do", f"Constrain page content to {num(ds.layout.container_max_width)}px",
+            f"container max-width measured at {num(ds.layout.container_max_width)}px{grid}")
+    if ds.layout.grid_measured:
+        add("Do", f"Lay out grids on {plural(ds.layout.grid_columns, 'column')}",
+            f"{plural(ds.layout.grid_columns, 'grid column')} measured in page layouts")
     return rules[:MAX_RULES]
 
 
@@ -97,7 +114,7 @@ def _component_examples(ds: DesignSystem) -> dict[str, str]:
 
     hover = ""
     if b.hover and b.hover.transform:
-        hover = " hover:[transform:" + b.hover.transform.replace(" ", "") + "]"
+        hover = " hover:[transform:" + readable_transform(b.hover.transform).replace(" ", "") + "]"
     elif b.hover:
         hover = " hover:brightness-95"
     dur = f"duration-[{num(ds.motion.duration_ms)}ms]"
@@ -123,12 +140,29 @@ def _component_examples(ds: DesignSystem) -> dict[str, str]:
     }
 
 
+def _hover_summary(ds: DesignSystem) -> str:
+    """English hover summary from structured data (not the Turkish hover_description)."""
+    h = ds.components.button.hover
+    parts: list[str] = []
+    transform = (h.transform if h and h.transform else None) or ds.motion.hover_transform
+    if transform and transform != "none":
+        parts.append(readable_transform(transform))
+    if h:
+        if h.shadow_changes:
+            parts.append("shadow changes")
+        if h.background_changes:
+            parts.append("background changes")
+        if h.border_changes:
+            parts.append("border changes")
+    return " + ".join(parts) if parts else "none"
+
+
 def render_design_md(ds: DesignSystem) -> str:
     sources = ds.sources[:MAX_SOURCES]
     ctx = dict(
         ds=ds,
         sources=[
-            {"source": s.source, "weight": _pct(s.weight), "mode": s.natural_mode, "roles": ", ".join(s.roles) or "-"}
+            {"source": display_source(s.source), "weight": _pct(s.weight), "mode": s.natural_mode, "roles": ", ".join(s.roles) or "-"}
             for s in sources
         ],
         more_sources=max(0, len(ds.sources) - MAX_SOURCES),
@@ -141,6 +175,9 @@ def render_design_md(ds: DesignSystem) -> str:
         rules=build_rules(ds),
         ex=_component_examples(ds),
         num=num,
+        hover_summary=_hover_summary(ds),
+        src=display_source,
+        grid_columns=plural(ds.layout.grid_columns, "column"),
     )
     text = render("DESIGN.md.j2", **ctx)
     lines = text.split("\n")

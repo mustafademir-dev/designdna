@@ -8,7 +8,7 @@ from designdna.models import BlendReport, DesignSystem, ThemeColors
 
 from ._common import (
     COLOR_ROLES, css_safe, family_list, kebab, num, oklch_of, ratio, render,
-    sorted_sizes, sorted_spacing,
+    readable_transform, sorted_sizes, sorted_spacing,
 )
 from .design_md import render_design_md
 from .tokens import render_tokens_json
@@ -126,7 +126,7 @@ def render_preview_html(ds: DesignSystem) -> str:
         dict(label="Metric two", value="86%", note="Placeholder"),
         dict(label="Metric three", value="342", note="Placeholder"),
     ]
-    hover_t = cb.hover.transform if (cb.hover and cb.hover.transform) else None
+    hover_t = readable_transform(cb.hover.transform) if (cb.hover and cb.hover.transform) else None
     ctx = _common_ctx(ds)
     ctx.update(
         palette=palette,
