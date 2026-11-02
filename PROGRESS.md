@@ -10,7 +10,7 @@ Bağlam sıkıştırılırsa buradan devam et. Dal: `claude/epic-pasteur-xuvf0v`
 | 2 extractor ×3 | ✅ | 2a 36, 2b 42, 2c 19 test |
 | 3 blender / generators / CLI | ✅ | 3a 57, 3b 14, 3c 30 test |
 | 4 tam test + fixer | ✅ | 231 passed, fixer gerekmedi; miner değişikliği yok |
-| 5 reviewer | — | |
+| 5 reviewer | ⏳ çalışıyor | Bilinen: DESIGN.md hover transform matrix() olarak görünüyor |
 | 6 fixer (bulgular) | — | |
 | 7 README/DECISIONS/TODO | — | |
 | 8 son test + PR | — | |
