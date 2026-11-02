@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en"{% if ds.base_mode == "dark" %} class="dark"{% endif %}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Preview</title>
+{% for u in font_imports %}
+<link rel="stylesheet" href="{{ u }}">
+{% endfor %}
+<style>
+{% autoescape false %}
+:root {
+{% for k, v in colors.light %}
+  --color-{{ k }}: {{ v }};
+{% endfor %}
+  --font-sans: {{ sans }};
+  --font-mono: {{ mono }};
+  --font-display: {{ display }};
+  --radius-btn: {{ btn_radius }}px;
+  --radius-input: {{ input_radius }}px;
+  --radius-card: {{ card_radius }}px;
+  --shadow-sm: {{ ds.shadows.sm }};
+  --shadow-md: {{ ds.shadows.md }};
+  --shadow-lg: {{ ds.shadows.lg }};
+  --duration: {{ duration }}ms;
+  --easing: {{ easing }};
+  --container: {{ container }}px;
+}
+.dark, [data-theme="dark"] {
+{% for k, v in colors.dark %}
+  --color-{{ k }}: {{ v }};
+{% endfor %}
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--color-background); color: var(--color-text-primary); font-family: var(--font-sans); font-size: {{ base_size }}px; line-height: {{ ds.typography.line_heights.get("normal", 1.5) }}; transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing); }
+main { max-width: var(--container); margin: 0 auto; padding: {{ gap }}px 16px; }
+section { margin: 0 0 {{ gap }}px; }
+h1, h2, h3, h4, h5 { font-family: var(--font-display); margin: 0 0 .5em; line-height: {{ ds.typography.line_heights.get("tight", 1.2) }}; }
+h2.section-title { font-size: {{ sizes_map.get("xl", 24) }}px; border-bottom: {{ card_border }}px solid var(--color-border); padding-bottom: 8px; margin-bottom: 16px; }
+p { margin: 0 0 1em; }
+.muted { color: var(--color-text-muted); }
+code, .mono { font-family: var(--font-mono); }
+#theme-toggle { position: fixed; top: 12px; right: 12px; z-index: 10; cursor: pointer; padding: 8px 14px; border-radius: var(--radius-btn); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-primary); font: inherit; box-shadow: var(--shadow-sm); }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.card { background: var(--color-surface); border: {{ card_border }}px solid var(--color-border); border-radius: var(--radius-card); padding: {{ card_pad }}px; {% if card_shadow %}box-shadow: var(--shadow-md);{% endif %} }
+.palette-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.palette-table th, .palette-table td { text-align: left; padding: 8px; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+.swatch { display: inline-block; width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--color-border); vertical-align: middle; margin-right: 8px; }
+.type-row { display: flex; align-items: baseline; gap: 16px; padding: 6px 0; border-bottom: 1px dashed var(--color-border); }
+.type-row .meta { width: 130px; flex: none; font-size: 12px; color: var(--color-text-muted); font-family: var(--font-mono); }
+.hero { background: var(--color-surface); border: {{ card_border }}px solid var(--color-border); border-radius: var(--radius-card); padding: {{ hero_pad }}px 24px; text-align: center; {% if gradient %}background-image: {{ gradient }};{% endif %} }
+.hero h1 { font-size: {{ sizes_map.get("4xl", 40) }}px; font-weight: {{ ds.typography.weights.get("bold", 700) }}; letter-spacing: {{ ds.typography.letter_spacing.get("tight", 0) }}em; }
+.stat .value { font-family: var(--font-display); font-size: {{ sizes_map.get("3xl", 32) }}px; font-weight: {{ ds.typography.weights.get("bold", 700) }}; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+label { font-size: 14px; font-weight: {{ ds.typography.weights.get("medium", 500) }}; }
+.input { font: inherit; color: var(--color-text-primary); background: var(--color-surface); border: {{ input_border }}px solid var(--color-border); border-radius: var(--radius-input); padding: {{ input_pad_y }}px {{ input_pad_x }}px; width: 100%; }
+.input:focus { outline: 2px solid var(--color-ring); outline-offset: 1px; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px; }
+.row .state { width: 80px; font-size: 12px; color: var(--color-text-muted); }
+.btn { font: inherit; font-weight: {{ ds.typography.weights.get("medium", 500) }}; cursor: pointer; padding: {{ btn_pad_y }}px {{ btn_pad_x }}px; border-radius: var(--radius-btn); border: {{ btn_border }}px solid var(--color-border); background: var(--color-surface); color: var(--color-text-primary); {% if btn_shadow %}box-shadow: var(--shadow-sm);{% endif %} transition: all var(--duration) var(--easing); }
+.btn-primary { background: var(--color-accent); color: var(--color-accent-foreground); border-color: var(--color-accent); }
+.btn-secondary { background: var(--color-secondary); color: var(--color-secondary-foreground); }
+.btn-destructive { background: var(--color-destructive); color: var(--color-destructive-foreground); border-color: var(--color-destructive); }
+.btn:hover:not(:disabled), .btn.is-hover { {% if hover_transform %}transform: {{ hover_transform }}; box-shadow: var(--shadow-lg);{% else %}filter: brightness(.93);{% endif %} }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+@media (max-width: 600px) { .type-row { flex-direction: column; gap: 2px; } }
+{% endautoescape %}
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-pressed="{{ 'true' if ds.base_mode == 'dark' else 'false' }}">Toggle theme</button>
+<main>
+<section id="palette">
+  <h2 class="section-title">Palette</h2>
+  <div style="overflow-x:auto">
+  <table class="palette-table">
+    <thead><tr><th>Role</th><th>Light hex</th><th>Dark hex</th><th>Contrast vs (light / dark)</th></tr></thead>
+    <tbody>
+{% for r in palette %}
+      <tr>
+        <td>{{ r.role }}</td>
+        <td><span class="swatch" style="background:{{ r.light }}"></span><code>{{ r.light }}</code></td>
+        <td><span class="swatch" style="background:{{ r.dark }}"></span><code>{{ r.dark }}</code></td>
+        <td>{% if r.against %}{{ r.against }}: {{ r.ratio_light }} / {{ r.ratio_dark }}{% else %}-{% endif %}</td>
+      </tr>
+{% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="typography">
+  <h2 class="section-title">Typography</h2>
+{% for t in type_rows %}
+  <div class="type-row"><span class="meta">{{ t.name }} {{ t.size }}px</span><span style="font-family:{{ t.family }};font-size:{{ t.size }}px;font-weight:{{ t.weight }};line-height:1.2">Sample heading text</span></div>
+{% endfor %}
+  <p class="muted">Body copy uses the sans family. Inline <code>mono text</code> uses the mono family.</p>
+</section>
+
+<section id="hero">
+  <div class="hero">
+    <h1>Headline placeholder</h1>
+    <p class="muted">A short supporting sentence that describes the page.</p>
+    <div class="row" style="justify-content:center">
+      <button class="btn btn-primary" type="button">Primary action</button>
+      <button class="btn" type="button">Secondary</button>
+    </div>
+  </div>
+</section>
+
+<section id="stats">
+  <h2 class="section-title">Stats</h2>
+  <div class="grid">
+{% for s in stats %}
+    <div class="card stat"><div class="muted">{{ s.label }}</div><div class="value">{{ s.value }}</div><div class="muted">{{ s.note }}</div></div>
+{% endfor %}
+  </div>
+</section>
+
+<section id="forms">
+  <h2 class="section-title">Forms</h2>
+  <div class="card">
+    <div class="field"><label for="f-text">Text input</label><input class="input" id="f-text" type="text" placeholder="Placeholder"></div>
+    <div class="field"><label for="f-select">Select</label><select class="input" id="f-select"><option>Option one</option><option>Option two</option></select></div>
+    <div class="field"><label for="f-area">Textarea</label><textarea class="input" id="f-area" rows="3" placeholder="Longer text"></textarea></div>
+    <div class="row"><label><input type="checkbox" checked> Checkbox</label><label><input type="radio" name="r" checked> Radio A</label><label><input type="radio" name="r"> Radio B</label></div>
+    <div class="field"><label for="f-disabled">Disabled input</label><input class="input" id="f-disabled" type="text" value="Disabled" disabled></div>
+  </div>
+</section>
+
+<section id="buttons">
+  <h2 class="section-title">Buttons</h2>
+{% for v in button_variants %}
+  <div class="row">
+    <span class="state">{{ v.label }}</span>
+    <button class="btn {{ v.cls }}" type="button">Normal</button>
+    <button class="btn {{ v.cls }} is-hover" type="button">Hover</button>
+    <button class="btn {{ v.cls }}" type="button" disabled>Disabled</button>
+  </div>
+{% endfor %}
+</section>
+</main>
+<script>
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById("theme-toggle");
+  btn.addEventListener("click", function () {
+    var on = root.classList.toggle("dark");
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+})();
+</script>
+</body>
+</html>

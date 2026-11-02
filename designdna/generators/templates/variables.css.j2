@@ -1,0 +1,56 @@
+/* DesignDNA variables.css - generated, do not edit by hand. */
+:root {
+  /* color (light) */
+{% for k, v in colors.light %}
+  --color-{{ k }}: {{ v }};
+{% endfor %}
+
+  /* font */
+  --font-sans: {{ ds.typography.sans.stack }};
+  --font-mono: {{ ds.typography.mono.stack }};
+  --font-display: {{ ds.typography.display.stack }};
+{% for k, v in sizes %}
+  --font-size-{{ k }}: {{ v }}px;
+{% endfor %}
+{% for k, v in weights %}
+  --font-weight-{{ k }}: {{ v }};
+{% endfor %}
+{% for k, v in line_heights %}
+  --line-height-{{ k }}: {{ v }};
+{% endfor %}
+{% for k, v in letter_spacing %}
+  --letter-spacing-{{ k }}: {{ v }}em;
+{% endfor %}
+
+  /* radius */
+{% for k, v in radius %}
+  --radius-{{ k }}: {{ v }}px;
+{% endfor %}
+
+  /* shadow */
+  --shadow-sm: {{ ds.shadows.sm }};
+  --shadow-md: {{ ds.shadows.md }};
+  --shadow-lg: {{ ds.shadows.lg }};
+
+  /* spacing */
+{% for k, v in spacing %}
+  --spacing-{{ k }}: {{ v }}px;
+{% endfor %}
+
+  /* motion */
+  --duration-base: {{ duration }}ms;
+  --easing-base: {{ ds.motion.easing }};
+
+  /* layout */
+  --container-max-width: {{ container }}px;
+{% for k, v in breakpoints %}
+  --breakpoint-{{ k }}: {{ v }}px;
+{% endfor %}
+}
+
+.dark,
+[data-theme="dark"] {
+{% for k, v in colors.dark %}
+  --color-{{ k }}: {{ v }};
+{% endfor %}
+}
