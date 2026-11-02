@@ -11,3 +11,4 @@
 | D7 | Ek komut bayrağı | CLI'ye `--cache-dir` seçeneği eklendi (varsayılan `./.designdna/cache`). | Testlerde izole cache dizini için. |
 | D8 | color_math yuvarlama | `rgb_to_hex` `floor(x*255+0.5)` kullanır; alpha 8-bit'e kuantize edilmez (rgba(255,255,255,0.08)/#0a0a0c → #1e1e1f, ±1). `color(srgb …)` ve açı birimleri de parse edilir. | Deterministik eşitlik çözümü; tarayıcıyla ±1 kanal uyumu. |
 | D9 | Fixture beklentileri | Belirsiz kalan değerler (text_muted, surface, bazı border_color'lar) beklenti JSON'larına konmadı; stripe_clean text_primary `any_of` [#0a2540, #425466]. Tüm fixture'lar 8px tabanlı spacing. | Yanlış beklenti, eksik beklentiden kötüdür (fixture-author kuralı). |
+| D10 | Faz sıralaması | Generator builder'ı (3b) Faz 2 ile eşzamanlı başlatıldı. | Spec gereği generator'lar yalnızca `sample_design_system.json` ile çalışır ve blender'ı beklemez; bağımlılığı yok. |
