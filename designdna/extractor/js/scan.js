@@ -44,7 +44,15 @@
         let hide = false;
         const meta = (el.id || '') + ' ' + classString(el) + ' ' + (el.getAttribute('aria-label') || '');
         if (KEY.test(meta.toLowerCase())) {
-          hide = true;
+          // Koruma: sayfa sarmalayıcısını gizleme (büyük + overlay değil, ya da ana içerik barındırıyor).
+          const rect0 = el.getBoundingClientRect();
+          const ix0 = Math.max(0, Math.min(rect0.right, vw) - Math.max(rect0.left, 0));
+          const iy0 = Math.max(0, Math.min(rect0.bottom, vh) - Math.max(rect0.top, 0));
+          const big = ix0 * iy0 > 0.6 * vw * vh;
+          const overlay = cs.position === 'fixed' || cs.position === 'sticky';
+          const hasMain = !!el.querySelector('main, h1, header, nav, [role="banner"], [role="main"]') ||
+            el.matches('main, [role="main"]');
+          hide = !((big && !overlay) || hasMain);
         } else if (
           ['fixed', 'sticky', 'absolute'].includes(cs.position) ||
           el.getAttribute('role') === 'dialog' ||
@@ -92,10 +100,12 @@
     if (SKIP.has(tag)) return;
     const cs = getComputedStyle(el);
     if (cs.display === 'none') return;
+    // opacity miras alınmaz; opacity:0 atası tüm alt ağacı görünmez yapar.
+    if (parseFloat(cs.opacity) <= 0) return;
     let myIdx = parentIdx;
     const rect = el.getBoundingClientRect();
     const visible =
-      cs.visibility !== 'hidden' && !(parseFloat(cs.opacity) <= 0) && rect.width >= 2 && rect.height >= 2;
+      cs.visibility !== 'hidden' && rect.width >= 2 && rect.height >= 2;
     if (visible) {
       const idx = elements.length;
       const x = r2(rect.left + window.scrollX);

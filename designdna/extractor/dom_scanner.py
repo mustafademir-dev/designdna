@@ -35,16 +35,18 @@ async (maxPx) => {
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const step = Math.max(300, Math.floor(window.innerHeight * 0.8));
   let y = 0;
+  let maxY = 0;
   for (let i = 0; i < 40; i++) {
     const limit = Math.min(document.documentElement.scrollHeight, maxPx);
     if (y >= limit) break;
     y = Math.min(y + step, limit);
     window.scrollTo(0, y);
+    maxY = Math.max(maxY, y);
     await sleep(25);
   }
   window.scrollTo(0, 0);
   await sleep(100);
-  return true;
+  return maxY;
 }
 """
 

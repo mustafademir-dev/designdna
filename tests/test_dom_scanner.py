@@ -195,6 +195,11 @@ def test_tw_vars_raw_and_text_not_copied(captures) -> None:
     cap = captures("linear_dark")
     assert any(p.name.startswith("--tw-") for p in cap.desktop.custom_properties)
     assert all(e.text_length >= 0 for e in cap.desktop.elements)
+    by_tag = [e for e in cap.desktop.elements if e.tag in ("h1", "p")]
+    assert by_tag and all(e.text_length > 0 for e in by_tag)
+    assert any(e.text_length > 0 for e in cap.desktop.elements)
+    for e in cap.desktop.elements:
+        assert not ({"text", "inner_text", "text_content"} & set(e.model_dump()))
     assert "html" == cap.desktop.elements[0].tag and cap.desktop.elements[0].parent_idx is None
 
 
@@ -249,5 +254,71 @@ def test_cookie_check_does_not_hide_wrapper_or_header(browser, tmp_path) -> None
         ids = {e.id for e in snap.elements}
         assert {"wrap", "h", "big"} <= ids
         assert "tiny" not in ids
+    finally:
+        ctx.close()
+
+
+def _scan_html(browser, tmp_path, html: str):
+    from designdna.extractor.dom_scanner import load_page, scan_page
+
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    try:
+        page = ctx.new_page()
+        f = tmp_path / "t.html"
+        f.write_text(html, encoding="utf-8")
+        load_page(page, f.as_uri())
+        return scan_page(page, "data:test", DESKTOP, "light")
+    finally:
+        ctx.close()
+
+
+@pytest.mark.browser
+def test_opacity_zero_ancestor_hides_subtree(browser, tmp_path) -> None:
+    html = (
+        "<html><body style='margin:0'>"
+        "<div id='p' style='opacity:0;width:100px;height:100px'>"
+        "<div id='kid' style='width:50px;height:50px;background:red'><span id='gk'>x</span></div></div>"
+        "<div id='vh' style='visibility:hidden;width:100px;height:100px'>"
+        "<div id='vis' style='visibility:visible;width:50px;height:50px'>y</div></div>"
+        "<div id='ok' style='width:50px;height:50px'>z</div></body></html>"
+    )
+    ids = {e.id for e in _scan_html(browser, tmp_path, html).elements}
+    assert not ids & {"p", "kid", "gk", "vh"}
+    assert {"ok", "vis"} <= ids
+
+
+@pytest.mark.browser
+def test_cookie_wrapper_class_not_hidden_but_fixed_banner_is(browser, tmp_path) -> None:
+    html = (
+        "<html><body style='margin:0'>"
+        "<div id='plain' class='gdpr-wrap' style='width:1440px;height:800px'>filler</div>"
+        "<div id='page' class='cookie-consent-open' style='min-height:900px'><h1>Title</h1><p>body</p></div>"
+        "<div id='banner' class='cookie-banner' style='position:fixed;bottom:0;left:0;width:300px;height:60px'>We use cookies</div>"
+        "</body></html>"
+    )
+    snap = _scan_html(browser, tmp_path, html)
+    ids = {e.id for e in snap.elements}
+    assert {"page", "plain"} <= ids
+    assert "banner" not in ids
+    assert snap.removed_overlays == ["div#banner.cookie-banner"]
+
+
+@pytest.mark.browser
+def test_scroll_loop_respects_10000px_cap(browser, tmp_path) -> None:
+    import time
+
+    from designdna.extractor.dom_scanner import _SCROLL_JS, load_page
+
+    f = tmp_path / "tall.html"
+    f.write_text("<html><body style='margin:0'><div style='height:50000px'>x</div></body></html>", encoding="utf-8")
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    try:
+        page = ctx.new_page()
+        t0 = time.monotonic()
+        load_page(page, f.as_uri())
+        assert time.monotonic() - t0 < 15
+        max_y = page.evaluate(_SCROLL_JS, 10000)
+        assert 0 < max_y <= 10000
+        assert page.evaluate("window.scrollY") == 0
     finally:
         ctx.close()
