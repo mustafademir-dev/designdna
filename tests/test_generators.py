@@ -12,7 +12,8 @@ from designdna.generators import (
     OUTPUT_FILES, generate_all, render_design_md, render_preview_html, render_shadcn_theme,
     render_tailwind_v4, render_tokens_json, render_variables_css, write_blend_report,
 )
-from designdna.models import BlendReport, DesignSystem, RoleAssignment, SourceRef, SourceWeight
+from designdna.generators.tokens import build_tokens
+from designdna.models import BlendReport, DesignSystem, HoverStyle, RoleAssignment, SourceRef, SourceWeight
 
 SAMPLE = Path(__file__).parent / "fixtures" / "sample_design_system.json"
 
@@ -39,7 +40,7 @@ def _validate_dtcg(node: dict, path: str = "") -> int:
             if t == "color":
                 assert re.fullmatch(r"#[0-9a-f]{6}([0-9a-f]{2})?", v)
             elif t == "dimension":
-                assert re.fullmatch(r"-?\d+(\.\d+)?(px|em|rem)", v), v
+                assert re.fullmatch(r"-?\d+(\.\d+)?(px|rem)", v), v
             elif t == "duration":
                 assert re.fullmatch(r"\d+(\.\d+)?ms", v)
             elif t == "cubicBezier":
@@ -179,3 +180,79 @@ def test_blend_report(tmp_path):
     p = write_blend_report(report, tmp_path / "x")
     assert p.name == "blend-report.json"
     assert BlendReport.model_validate_json(p.read_text(encoding="utf-8")) == report
+
+
+def test_letter_spacing_is_number_with_description(ds):
+    ls = build_tokens(ds)["font"]["letterSpacing"]
+    assert ls
+    for tok in ls.values():
+        assert tok["$type"] == "number" and isinstance(tok["$value"], (int, float))
+        assert "em" in tok["$description"]
+
+
+def test_readable_transform_and_grammar():
+    from designdna.generators._common import article, plural, readable_transform
+
+    assert readable_transform("matrix(1, 0, 0, 1, -2, -2)") == "translate(-2px, -2px)"
+    assert readable_transform("matrix(1.05,0,0,1.05,0,0)") == "scale(1.05)"
+    assert readable_transform("translate(-2px, -2px)") == "translate(-2px, -2px)"
+    for n in ("8px", "11", "18", "80", "85px"):
+        assert article(n) == "an", n
+    for n in ("1px", "2px", "12", "16", "100"):
+        assert article(n) == "a", n
+    assert plural(1, "column") == "1 column" and plural(12, "column") == "12 columns"
+
+
+def test_matrix_never_leaks(ds):
+    d = ds.model_copy(deep=True)
+    d.components.button.hover = HoverStyle(samples=3, transform="matrix(1, 0, 0, 1, -2, -2)", shadow_changes=True)
+    d.motion.hover_transform = "matrix(1, 0, 0, 1, -2, -2)"
+    for out in (render_design_md(d), render_preview_html(d)):
+        assert "matrix(" not in out
+    md = render_design_md(d)
+    assert "translate(-2px, -2px)" in md and "hover:[transform:translate(-2px,-2px)]" in md
+
+
+def test_unmeasured_no_rules(ds):
+    d = ds.model_copy(deep=True)
+    d.motion.measured = False
+    d.layout.container_measured = False
+    d.layout.grid_measured = False
+    md = render_design_md(d)
+    assert "Transition with" not in md
+    assert "Constrain page content" not in md
+    assert "Lay out grids" not in md
+    assert "container max-width measured" not in md
+
+
+def test_hover_summary_english_not_turkish(ds):
+    d = ds.model_copy(deep=True)
+    d.motion.hover_description = "gölge büyür ÖZEL-TÜRKÇE"
+    assert "ÖZEL-TÜRKÇE" not in render_design_md(d)
+
+
+def test_no_shadow_contradiction(ds):
+    d = ds.model_copy(deep=True)
+    d.shadows.style = "hard"
+    d.components.button.shadow = "none"
+    d.components.button.stats.with_shadow = 0.0
+    d.components.input.stats.with_shadow = 0.0
+    d.components.card.shadow = "4px 4px 0 #000"
+    d.components.card.stats.with_shadow = 0.9
+    md = render_design_md(d)
+    assert "Don't put drop shadows on buttons" in md
+    assert "shadow character on cards;" in md
+    assert "shadow character on buttons" not in md
+    # hiçbir bileşen gölgeli değilse genel karakter kuralı yok
+    d.components.card.stats.with_shadow = 0.0
+    md = render_design_md(d)
+    assert "shadow character" not in md
+
+
+def test_no_local_paths_in_outputs(ds):
+    d = ds.model_copy(deep=True)
+    d.components.button.source = "file:///home/user/x/a.html"
+    d.components.card.source = "fixture://b.html"
+    d.sources[0].source = "file:///home/user/x/a.html"
+    md = render_design_md(d)
+    assert "file://" not in md and "fixture://" not in md and "a.html" in md

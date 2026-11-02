@@ -33,12 +33,9 @@ def parse_source(text: str) -> SourceSpec:
 
     weight: float | None = None
     match = WEIGHT_RE.search(value)
-    if match:
+    # '@0' / '@0.0' pozitif sayı değildir: '@' konumun parçası kalır (spec §6, D20).
+    if match and float(match.group(1)) > 0:
         weight = float(match.group(1))
-        if weight <= 0:
-            raise SourceParseError(
-                f"Ağırlık sıfırdan büyük olmalı: '{raw}'. Örnek: https://site.com@0.7"
-            )
         value = value[: match.start()]
         if not value:
             raise SourceParseError(f"Kaynak konumu eksik: '{raw}'")
@@ -55,6 +52,17 @@ def parse_source(text: str) -> SourceSpec:
         location, is_local = _file_uri(resolved.as_posix()), True
 
     return SourceSpec(raw=raw, location=location, weight=weight, is_local=is_local)
+
+
+def display_source(location: str) -> str:
+    """Gösterim adı: file://…/a.html -> a.html, fixture://a.html -> a.html; http(s) olduğu gibi."""
+    lowered = location.lower()
+    if lowered.startswith("fixture://"):
+        return location[len("fixture://"):] or location
+    if lowered.startswith("file://"):
+        name = unquote(urlparse(location).path).rstrip("/").rsplit("/", 1)[-1]
+        return name or location
+    return location
 
 
 def source_to_path(spec: SourceSpec) -> Path | None:
