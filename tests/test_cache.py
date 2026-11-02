@@ -72,6 +72,18 @@ def test_roundtrip_without_counter_or_mobile(tmp_path: Path) -> None:
     assert again is not None and again.mobile is None
 
 
+def test_refresh_without_counter_or_mobile_removes_stale(tmp_path: Path) -> None:
+    full = _capture("stripe_clean")
+    assert full.mobile is not None and full.counter is not None
+    store = CacheStore(tmp_path)
+    store.save_capture(full)
+    refreshed = full.model_copy(update={"counter": None, "mobile": None})
+    store.save_capture(refreshed)
+    loaded = store.load_capture(full.source)
+    assert loaded is not None and loaded.counter is None and loaded.mobile is None
+    assert len(list(tmp_path.glob("*.json"))) == 1
+
+
 def test_missing_returns_none(tmp_path: Path) -> None:
     store = CacheStore(tmp_path / "nope")
     assert store.load_capture("file:///x.html") is None

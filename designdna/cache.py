@@ -56,7 +56,19 @@ class CacheStore:
         path.write_text(entry.model_dump_json(indent=2), encoding="utf-8")
         return path
 
+    def _drop(self, source: str, viewport: str, color_scheme: str, versions: set[str]) -> None:
+        for version in versions:
+            self.path_for(cache_key(source, viewport, color_scheme, version)).unlink(missing_ok=True)
+
     def save_capture(self, capture: RawCapture) -> list[Path]:
+        # Önceki taramadan kalan, yeni capture'da bulunmayan mobil/karşıt-mod girdilerini sil.
+        versions = {capture.tool_version, TOOL_VERSION}
+        if capture.mobile is None:
+            self._drop(capture.source, MOBILE_KEY, "light", versions)
+        if capture.counter is None:
+            for scheme in ("dark", "light"):
+                if scheme != capture.desktop.color_scheme:
+                    self._drop(capture.source, DESKTOP_KEY, scheme, versions)
         paths = [self._write(capture, capture.desktop, capture.hovers)]
         if capture.mobile is not None:
             paths.append(self._write(capture, capture.mobile, []))
