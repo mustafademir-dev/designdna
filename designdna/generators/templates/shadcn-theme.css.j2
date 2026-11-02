@@ -1,0 +1,14 @@
+/* DesignDNA shadcn-theme.css - shadcn/ui variables (oklch), generated. */
+:root {
+{% for k, v in light %}
+  --{{ k }}: {{ v }};
+{% endfor %}
+  --radius: {{ radius }};
+}
+
+.dark {
+{% for k, v in dark %}
+  --{{ k }}: {{ v }};
+{% endfor %}
+  --radius: {{ radius }};
+}
