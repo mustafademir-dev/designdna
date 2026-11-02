@@ -12,14 +12,14 @@ Bağlam sıkıştırılırsa buradan devam et. Dal: `claude/epic-pasteur-xuvf0v`
 | 4 tam test + fixer | ✅ | 231 passed, fixer gerekmedi; miner değişikliği yok |
 | 5 reviewer | ✅ | KRİTİK 0, YÜKSEK 1 (README → Faz 7), ORTA 4, DÜŞÜK 11 |
 | 6 fixer (bulgular) | ✅ | 263 passed; #15/#16 TODO.da, accent D19 |
-| 7 README/DECISIONS/TODO | ⏳ | builder |
-| 8 son test + PR | — | |
+| 7 README/DECISIONS/TODO | ✅ | Türkçe README; D1–D23; TODO 4 madde |
+| 8 son test + PR | ✅ | 263 passed (17 tarayıcı testi gerçek Chromium ile), PR açıldı |
 
 ## Biten modüller
--
+- Tümü: color_math, dom_scanner+scan.js, hover_probe, cache, 5 miner, pipeline, blender, 7 generator + blend-report, sources, CLI, skill/SKILL.md
 
 ## Açık hatalar
--
+- Yok. Bilinen kısıtlar TODO.md'de.
 
 ## Kararlar
 DECISIONS.md'ye bak.
