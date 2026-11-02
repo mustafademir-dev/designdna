@@ -1,0 +1,33 @@
+{
+  "fixture": "linear_dark.html",
+  "natural_mode": "dark",
+  "dominant_background": "#0a0a0c",
+  "has_color_scheme_query": false,
+  "counter_background": null,
+  "colors": {
+    "background": "#0a0a0c",
+    "text_primary": "#ededef",
+    "accent": "#5e6ad2",
+    "border": "#1d1d1f"
+  },
+  "palette_includes": ["#0a0a0c", "#5e6ad2"],
+  "fonts": {
+    "body_family": "Inter",
+    "display_family": "Inter",
+    "mono_family": "SF Mono",
+    "body_is_monospace": false
+  },
+  "components": {
+    "button": {"radius_px": 8, "border_width_px": 1, "has_backdrop": false},
+    "card": {"radius_px": 8, "border_width_px": 1, "has_shadow": false, "has_backdrop": true},
+    "input": {"radius_px": 8, "border_width_px": 1}
+  },
+  "shadow_style": "none",
+  "hover": {"button": {"transform_changes": false, "background_changes": true}},
+  "tokens": {"include": ["--background", "--accent"], "exclude_prefixes": ["--tw-"]},
+  "gradients_min": 0,
+  "spacing_base": 8,
+  "container_max_width_px": 1100,
+  "breakpoints_include": [768, 1280],
+  "overlays": {"cookie_banner_removed": false, "header_position": "static"}
+}

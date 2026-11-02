@@ -10,3 +10,4 @@
 | D6 | Spacing kuantizasyonu | ≤24px değerler `{0,2,4,6,8,12,16,24}`'e, >24px değerler `{32,40,48,64,80,96,128}`'e oturtulur. Radius >40px → `9999px`. | Spec yalnızca 24px'e kadar ölçek veriyor; daha büyük bölüm boşlukları da gerekli. |
 | D7 | Ek komut bayrağı | CLI'ye `--cache-dir` seçeneği eklendi (varsayılan `./.designdna/cache`). | Testlerde izole cache dizini için. |
 | D8 | color_math yuvarlama | `rgb_to_hex` `floor(x*255+0.5)` kullanır; alpha 8-bit'e kuantize edilmez (rgba(255,255,255,0.08)/#0a0a0c → #1e1e1f, ±1). `color(srgb …)` ve açı birimleri de parse edilir. | Deterministik eşitlik çözümü; tarayıcıyla ±1 kanal uyumu. |
+| D9 | Fixture beklentileri | Belirsiz kalan değerler (text_muted, surface, bazı border_color'lar) beklenti JSON'larına konmadı; stripe_clean text_primary `any_of` [#0a2540, #425466]. Tüm fixture'lar 8px tabanlı spacing. | Yanlış beklenti, eksik beklentiden kötüdür (fixture-author kuralı). |

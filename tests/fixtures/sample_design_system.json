@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "tool_version": "0.1.0",
+  "sources": [
+    {
+      "source": "file:///fixtures/neo_brutalist.html",
+      "weight": 0.6,
+      "natural_mode": "light",
+      "roles": [
+        "background",
+        "surface",
+        "text-primary",
+        "text-muted",
+        "border",
+        "font-body",
+        "font-mono",
+        "spacing",
+        "layout",
+        "shadow",
+        "font-display",
+        "radius-card"
+      ]
+    },
+    {
+      "source": "file:///fixtures/linear_dark.html",
+      "weight": 0.4,
+      "natural_mode": "dark",
+      "roles": [
+        "accent",
+        "radius-control",
+        "hover-style"
+      ]
+    }
+  ],
+  "base_mode": "light",
+  "light": {
+    "background": "#fafafa",
+    "surface": "#ffffff",
+    "text_primary": "#111827",
+    "text_muted": "#4b5563",
+    "accent": "#4f46e5",
+    "accent_foreground": "#ffffff",
+    "border": "#8c8c96",
+    "secondary": "#f1f1f1",
+    "secondary_foreground": "#111827",
+    "destructive": "#dc2626",
+    "destructive_foreground": "#ffffff",
+    "ring": "#4f46e5"
+  },
+  "dark": {
+    "background": "#0b0b0f",
+    "surface": "#16161d",
+    "text_primary": "#f3f4f6",
+    "text_muted": "#a1a1aa",
+    "accent": "#818cf8",
+    "accent_foreground": "#0b0b0f",
+    "border": "#6b6b78",
+    "secondary": "#1f1f28",
+    "secondary_foreground": "#f3f4f6",
+    "destructive": "#ef4444",
+    "destructive_foreground": "#0b0b0f",
+    "ring": "#818cf8"
+  },
+  "gradients": [
+    "linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%)"
+  ],
+  "typography": {
+    "sans": {
+      "family": "Inter",
+      "stack": "Inter, -apple-system, 'Segoe UI', sans-serif",
+      "source": "file:///fixtures/neo_brutalist.html"
+    },
+    "mono": {
+      "family": "Menlo",
+      "stack": "Menlo, Consolas, 'Courier New', monospace",
+      "source": "file:///fixtures/neo_brutalist.html"
+    },
+    "display": {
+      "family": "Inter",
+      "stack": "Inter, -apple-system, 'Segoe UI', sans-serif",
+      "source": "file:///fixtures/neo_brutalist.html"
+    },
+    "base_size_px": 16.0,
+    "scale_ratio": 1.25,
+    "sizes": {
+      "xs": 12.0,
+      "sm": 14.0,
+      "base": 16.0,
+      "lg": 20.0,
+      "xl": 25.0,
+      "2xl": 31.0,
+      "3xl": 39.0,
+      "4xl": 49.0,
+      "5xl": 61.0
+    },
+    "line_heights": {
+      "tight": 1.2,
+      "normal": 1.5,
+      "relaxed": 1.7
+    },
+    "weights": {
+      "normal": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    },
+    "letter_spacing": {
+      "tight": -0.02,
+      "normal": 0.0,
+      "wide": 0.04
+    },
+    "font_imports": []
+  },
+  "spacing": {
+    "0": 0.0,
+    "1": 8.0,
+    "2": 16.0,
+    "3": 24.0,
+    "4": 32.0,
+    "5": 48.0,
+    "6": 64.0,
+    "7": 96.0
+  },
+  "spacing_base": 8,
+  "radius": {
+    "none": 0.0,
+    "sm": 4.0,
+    "md": 8.0,
+    "lg": 12.0,
+    "xl": 16.0,
+    "full": 9999.0,
+    "default": 8.0
+  },
+  "shadows": {
+    "style": "soft",
+    "sm": "0 1px 2px rgba(0, 0, 0, 0.08)",
+    "md": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)",
+    "lg": "0 13px 27px -5px rgba(0, 0, 0, 0.25), 0 8px 16px -8px rgba(0, 0, 0, 0.3)"
+  },
+  "motion": {
+    "duration_ms": 150.0,
+    "easing": "ease",
+    "hover_transform": "translate(-2px, -2px)",
+    "hover_description": "translate(-2px,-2px) + gölge büyür"
+  },
+  "layout": {
+    "container_max_width": 1100.0,
+    "breakpoints": {
+      "sm": 640.0,
+      "md": 768.0,
+      "lg": 1024.0,
+      "xl": 1280.0,
+      "2xl": 1536.0
+    },
+    "grid_columns": 3
+  },
+  "components": {
+    "button": {
+      "radius_px": 8.0,
+      "border_width_px": 1.0,
+      "border_style": "solid",
+      "shadow": "none",
+      "padding": [
+        8.0,
+        16.0,
+        8.0,
+        16.0
+      ],
+      "backdrop_filter": "none",
+      "hover": {
+        "samples": 4,
+        "transform": "translate(-2px, -2px)",
+        "background_changes": false,
+        "border_changes": false,
+        "shadow_changes": true,
+        "duration_ms": 150.0,
+        "easing": "ease"
+      },
+      "stats": {
+        "count": 6,
+        "with_border": 1.0,
+        "with_shadow": 0.5,
+        "with_backdrop": 0.0,
+        "with_background": 1.0,
+        "radius_values": {
+          "8": 6
+        }
+      },
+      "source": "file:///fixtures/linear_dark.html"
+    },
+    "input": {
+      "radius_px": 8.0,
+      "border_width_px": 1.0,
+      "border_style": "solid",
+      "shadow": "none",
+      "padding": [
+        8.0,
+        16.0,
+        8.0,
+        16.0
+      ],
+      "backdrop_filter": "none",
+      "hover": null,
+      "stats": {
+        "count": 3,
+        "with_border": 1.0,
+        "with_shadow": 0.0,
+        "with_backdrop": 0.0,
+        "with_background": 1.0,
+        "radius_values": {
+          "8": 3
+        }
+      },
+      "source": "file:///fixtures/linear_dark.html"
+    },
+    "card": {
+      "radius_px": 12.0,
+      "border_width_px": 1.0,
+      "border_style": "solid",
+      "shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+      "padding": [
+        24.0,
+        24.0,
+        24.0,
+        24.0
+      ],
+      "backdrop_filter": "blur(12px)",
+      "hover": null,
+      "stats": {
+        "count": 4,
+        "with_border": 1.0,
+        "with_shadow": 1.0,
+        "with_backdrop": 0.25,
+        "with_background": 1.0,
+        "radius_values": {
+          "12": 3,
+          "8": 1
+        }
+      },
+      "source": "file:///fixtures/neo_brutalist.html"
+    }
+  }
+}

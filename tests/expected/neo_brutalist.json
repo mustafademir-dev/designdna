@@ -1,0 +1,33 @@
+{
+  "fixture": "neo_brutalist.html",
+  "natural_mode": "light",
+  "dominant_background": "#fffdf2",
+  "has_color_scheme_query": false,
+  "counter_background": null,
+  "colors": {
+    "background": "#fffdf2",
+    "text_primary": "#000000",
+    "accent": {"any_of": ["#ffe600", "#ff5fa2"]},
+    "border": "#000000"
+  },
+  "palette_includes": ["#ffe600", "#ff5fa2"],
+  "fonts": {
+    "body_family": "Courier New",
+    "display_family": null,
+    "mono_family": "Courier New",
+    "body_is_monospace": true
+  },
+  "components": {
+    "button": {"radius_px": 0, "border_width_px": 3, "border_color": "#000000", "shadow_contains": "4px 4px 0px", "has_backdrop": false},
+    "card": {"radius_px": 0, "border_width_px": 3, "has_shadow": true},
+    "input": {"radius_px": 0, "border_width_px": 3}
+  },
+  "shadow_style": "hard",
+  "hover": {"button": {"transform_changes": true, "background_changes": false, "shadow_changes": true}},
+  "tokens": {"include": ["--accent", "--bg"], "exclude_prefixes": ["--tw-"]},
+  "gradients_min": 0,
+  "spacing_base": 8,
+  "container_max_width_px": 1200,
+  "breakpoints_include": [768, 1024],
+  "overlays": {"cookie_banner_removed": false, "header_position": "static"}
+}
