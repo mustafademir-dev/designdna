@@ -141,3 +141,29 @@ def test_counter(case):
 def test_natural_mode(case):
     name, cap, ex, exp = case
     assert ex.natural_mode == exp["natural_mode"]
+
+
+def test_mobile_is_not_color_or_token_source(case):
+    name, cap, ex, exp = case
+    if cap.mobile is None:
+        pytest.skip("mobile yok")
+    from designdna.models import CustomProperty
+
+    elements = [
+        e.model_copy(
+            update={
+                "styles": {
+                    k: ("rgb(255, 0, 0)" if "color" in k.lower() else v) for k, v in e.styles.items()
+                }
+            }
+        )
+        for e in cap.mobile.elements
+    ]
+    props = list(cap.mobile.custom_properties) + [
+        CustomProperty(name="--accent", value="#ff0000", selector=":root")
+    ]
+    mobile = cap.mobile.model_copy(update={"elements": elements, "custom_properties": props})
+    ex2 = build_site_extraction(cap.model_copy(update={"mobile": mobile}))
+    assert ex2.colors == ex.colors
+    assert ex2.tokens == ex.tokens
+    assert ex2.typography == ex.typography

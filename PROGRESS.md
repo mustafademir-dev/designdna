@@ -11,8 +11,8 @@ Bağlam sıkıştırılırsa buradan devam et. Dal: `claude/epic-pasteur-xuvf0v`
 | 3 blender / generators / CLI | ✅ | 3a 57, 3b 14, 3c 30 test |
 | 4 tam test + fixer | ✅ | 231 passed, fixer gerekmedi; miner değişikliği yok |
 | 5 reviewer | ✅ | KRİTİK 0, YÜKSEK 1 (README → Faz 7), ORTA 4, DÜŞÜK 11 |
-| 6 fixer (bulgular) | ⏳ | 6A scan.js+cache, 6B blender, 6C generators+CLI paralel; #15/#16 TODO'ya |
-| 7 README/DECISIONS/TODO | — | |
+| 6 fixer (bulgular) | ✅ | 263 passed; #15/#16 TODO.da, accent D19 |
+| 7 README/DECISIONS/TODO | ⏳ | builder |
 | 8 son test + PR | — | |
 
 ## Biten modüller

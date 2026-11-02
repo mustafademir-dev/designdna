@@ -208,18 +208,55 @@ def _fmt_num(value: float) -> str:
     return str(int(value)) if value == int(value) else str(value)
 
 
-_MATRIX_RE = re.compile(
-    r"^matrix\(\s*1\s*,\s*0\s*,\s*0\s*,\s*1\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)$"
-)
+_NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?"
+_MATRIX_RE = re.compile(rf"^matrix\(\s*({_NUM}(?:\s*,\s*{_NUM}){{5}})\s*\)$", re.I)
+_MATRIX3D_RE = re.compile(rf"^matrix3d\(\s*({_NUM}(?:\s*,\s*{_NUM}){{15}})\s*\)$", re.I)
 _PX_RE = re.compile(r"(-?\d*\.?\d+)px")
+_EPS = 1e-6
+
+
+def _close(a: float, b: float) -> bool:
+    return abs(a - b) <= _EPS
+
+
+def _compose(sx: float, sy: float, tx: float, ty: float, tz: float = 0.0, three_d: bool = False) -> str | None:
+    parts: list[str] = []
+    if not (_close(tx, 0) and _close(ty, 0)):
+        fn = "translate3d" if three_d else "translate"
+        tail = f", {_fmt_num(tz)}px" if three_d else ""
+        parts.append(f"{fn}({_fmt_num(tx)}px, {_fmt_num(ty)}px{tail})")
+    if _close(sx, sy):
+        if not _close(sx, 1):
+            parts.append(f"scale({_fmt_num(sx)})")
+    else:
+        parts.append(f"scale({_fmt_num(sx)}, {_fmt_num(sy)})")
+    return " ".join(parts) if parts else None
 
 
 def _fmt_transform(raw: str | None) -> str | None:
-    if not raw or raw == "none":
+    """matrix()/matrix3d() -> okunur translate/scale; döndürme/eğme içerenler ham kalır."""
+    if not raw or raw.strip() == "none":
         return None
-    m = _MATRIX_RE.match(raw.strip())
+    text = raw.strip()
+    m = _MATRIX_RE.match(text)
     if m:
-        return f"translate({_fmt_num(float(m.group(1)))}px, {_fmt_num(float(m.group(2)))}px)"
+        a, b, c, d, tx, ty = (float(v) for v in m.group(1).split(","))
+        if _close(b, 0) and _close(c, 0) and a > 0 and d > 0:
+            return _compose(a, d, tx, ty)
+        return raw
+    m = _MATRIX3D_RE.match(text)
+    if m:
+        v = [float(x) for x in m.group(1).split(",")]
+        # sütun-öncelikli: [a b 0 0, c d 0 0, 0 0 1 0, tx ty tz 1]
+        identity_rest = (
+            _close(v[1], 0) and _close(v[2], 0) and _close(v[3], 0) and _close(v[4], 0)
+            and _close(v[6], 0) and _close(v[7], 0) and _close(v[8], 0) and _close(v[9], 0)
+            and _close(v[10], 1) and _close(v[11], 0) and _close(v[15], 1)
+            and v[0] > 0 and v[5] > 0
+        )
+        if identity_rest:
+            return _compose(v[0], v[5], v[12], v[13], v[14], three_d=not _close(v[14], 0))
+        return raw
     return raw
 
 
@@ -290,6 +327,7 @@ class _Themes:
         border = self._fix(mode, "border", c["border"], bs_names, bs, 3.0)
         accent = c["accent"].lower()
         accent_fg = _best_foreground(accent)
+        ring = self._fix(mode, "ring", accent, bs_names, bs, 3.0)
         secondary = _shift_l(surface, -0.04 if mode == "light" else 0.04)
         secondary_fg = self._fix(mode, "secondary-foreground", text_primary, ["secondary"], [secondary], 4.5)
         destructive = self._fix(mode, "destructive", _DESTRUCTIVE[mode], bs_names, bs, 3.0)
@@ -305,7 +343,7 @@ class _Themes:
             secondary_foreground=secondary_fg,
             destructive=destructive,
             destructive_foreground=_best_foreground(destructive),
-            ring=accent,
+            ring=ring,
         )
 
 
@@ -375,7 +413,7 @@ def _component_spec(
     if width > 0 and border_style == "none":
         border_style = "solid"
     if direct:
-        shadow = style.box_shadow or "none"
+        shadow = style.box_shadow
     elif kind == "card":
         shadow = shadow_sm
     else:
@@ -385,6 +423,8 @@ def _component_spec(
     padding = tuple(quantize_spacing(p) for p in style.padding)
     stats: ComponentStats | None = style.stats if direct else None
     hover: HoverStyle | None = style.hover if direct else None
+    if hover is not None:
+        hover = hover.model_copy(update={"transform": _fmt_transform(hover.transform)})
     return ComponentSpec(
         radius_px=radius,
         border_width_px=width,
@@ -417,6 +457,7 @@ def _motion(ex: SiteExtraction) -> MotionSystem:
             easing="ease",
             hover_transform=None,
             hover_description="Belirgin bir hover değişikliği yakalanmadı",
+            measured=False,
         )
     transform = _fmt_transform(hover.transform)
     parts: list[str] = []
@@ -455,6 +496,8 @@ def _layout(ex: SiteExtraction) -> LayoutSystem:
         prev = value
     return LayoutSystem(
         container_max_width=float(ex.layout.container_max_width or 1200.0),
+        container_measured=bool(ex.layout.container_max_width),
+        grid_measured=bool(ex.layout.grid_columns),
         breakpoints=breakpoints,
         grid_columns=int(ex.layout.grid_columns[0]) if ex.layout.grid_columns else 12,
     )
