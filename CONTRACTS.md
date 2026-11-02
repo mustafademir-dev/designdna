@@ -222,8 +222,9 @@ def render_shadcn_theme(ds) -> str ; render_tokens_json(ds) -> str ; render_desi
 WEIGHT_RE = re.compile(r"@(\d+(?:\.\d+)?)$")
 def parse_source(text: str) -> SourceSpec
     # son '@' sonrası WEIGHT_RE ile pozitif sayıysa ağırlık, değilse '@' konumun parçası.
+    # '@' sonrası 0 ise de (pozitif değil) '@' konumun parçasıdır, ağırlık None (spec §6).
     # http(s):// ve file:// olduğu gibi; 'C:\\...' / 'C:/...' -> PureWindowsPath(...).as_uri();
-    # diğer yerel yollar -> Path(...).expanduser().resolve().as_uri(). Ağırlık 0 veya negatif -> SourceParseError.
+    # diğer yerel yollar -> Path(...).expanduser().resolve().as_uri().
 def source_to_path(spec: SourceSpec) -> Path | None   # file:// ise yerel Path
 ```
 - `designdna extract --source ... [--refresh] [--cache-dir PATH]`
@@ -276,3 +277,9 @@ Not: Computed style'da `box-shadow` Chrome'da `rgb(0, 0, 0) 4px 4px 0px 0px` bi�
 - `tests/fixtures/sample_snapshot.json`: geçerli `RawSnapshot` (models ile `model_validate_json` geçer), ~40-80 element; buton, input, kart, başlıklar, p, code, border'lı ve gölgeli kutular, `:root` token'ları (+ `--tw-*` gürültü), 1 gradient, 2+ media query, @font-face.
 - `tests/fixtures/sample_design_system.json`: geçerli `DesignSystem` (light+dark kontrast kurallarını SAĞLAYAN renklerle) — generator'lar bununla test edilir.
 - `tests/fixtures/snapshots/<fixture>.capture.json`: builder 2a'nın `scripts/regen_fixture_snapshots.py` ile fixture HTML'lerden ürettiği `RawCapture`'lar (commit edilir; miner/blender testleri tarayıcısız bunları kullanır).
+
+## 9. Faz 6 eklemeleri (reviewer bulguları)
+- `MotionSystem.measured`, `LayoutSystem.container_measured` / `grid_measured`: blender varsayılan değer kullandığında False yapar; DESIGN.md bu durumda o konuda "ölçüldü" kanıtlı kural YAZMAZ.
+- `ComponentSpec.hover.transform` ve `MotionSystem.hover_transform` okunur biçimdedir: `matrix(1,0,0,1,tx,ty)` → `translate(txpx, typx)`, `matrix(s,0,0,s,0,0)` → `scale(s)`, karışıklar `translate(..) scale(..)`; çözülemeyen matrix ham kalır.
+- `ring`, background ve surface'e karşı ≥ 3:1 (UI elemanı kuralı). `accent` marka dolgu rengidir; okunurluğu accent-foreground ile sağlanır, kendisi kaydırılmaz (DECISIONS D19).
+- Çıktılarda (DESIGN.md, preview, CLI tablosu) yerel kaynaklar mutlak yol yerine dosya adıyla gösterilir (`file:///…/a.html` → `a.html`, `fixture://a.html` → `a.html`). `DesignSystem.sources[].source` ve blend-report ham konumu korur.

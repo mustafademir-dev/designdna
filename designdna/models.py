@@ -460,14 +460,21 @@ class ShadowSystem(_Model):
 class MotionSystem(_Model):
     duration_ms: float
     easing: str
-    hover_transform: str | None = None
-    hover_description: str = Field(description="İnsan-okur özet, örn. 'translate(-2px,-2px) + gölge büyür'")
+    hover_transform: str | None = Field(
+        default=None, description="Okunur biçimde, örn. 'translate(-2px, -2px)' (matrix() değil)"
+    )
+    hover_description: str = Field(description="İnsan-okur özet (Türkçe; CLI için), örn. 'translate(-2px,-2px) + gölge büyür'")
+    measured: bool = Field(
+        default=True, description="Süre/easing gerçekten ölçüldü mü; False ise varsayılan değerlerdir (DESIGN.md kural yazmaz)"
+    )
 
 
 class LayoutSystem(_Model):
     container_max_width: float
     breakpoints: dict[str, float] = Field(description="sm, md, lg, xl, 2xl -> px")
     grid_columns: int
+    container_measured: bool = Field(default=True, description="False ise container_max_width varsayılandır")
+    grid_measured: bool = Field(default=True, description="False ise grid_columns varsayılandır")
 
 
 class ComponentSpec(_Model):
