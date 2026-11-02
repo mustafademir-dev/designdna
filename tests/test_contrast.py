@@ -50,6 +50,8 @@ def _assert_theme(t):
         assert _cr(fg, t.surface) >= 4.5, (fg, t.surface)
     assert _cr(t.accent_foreground, t.accent) >= 4.5
     for ref in (t.background, t.surface):
+        assert _cr(t.ring, ref) >= 3.0, (t.ring, ref)
+    for ref in (t.background, t.surface):
         assert _cr(t.border, ref) >= 3.0
     assert _cr(t.secondary_foreground, t.secondary) >= 4.5
     assert _cr(t.destructive_foreground, t.destructive) >= 4.5
@@ -136,3 +138,11 @@ def test_ensure_step_limit_uses_fallback():
     # 0.02 * 40 = 0.8: L=0.96 -> 0.16'ya iner; 20:1 bunun ötesinde
     out, ratio, ok = ensure_contrast("#f0f0f0", ["#ffffff"], 20.0)
     assert out == "#000000" and ok
+
+
+def test_ring_fix_recorded_and_accent_unshifted(ex):
+    ds, rep = blend([_tricky(ex["linear_dark"])])
+    assert any(f.role == "ring" for f in rep.contrast_fixes)
+    for t in (ds.light, ds.dark):
+        assert _cr(t.ring, t.background) >= 3.0 and _cr(t.ring, t.surface) >= 3.0
+    assert ds.light.accent == "#8a8a00"

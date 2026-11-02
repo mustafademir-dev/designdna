@@ -154,13 +154,13 @@ def test_derived_counter_theme(ex):
 
     l_bg = rgb_to_oklch(hex_to_rgb(ds.light.background))[0]
     l_surface = rgb_to_oklch(hex_to_rgb(ds.light.surface))[0]
-    assert 0.96 <= l_bg <= 0.995
-    assert 0.92 <= l_surface <= 0.965
+    assert 0.97 - 0.005 <= l_bg <= 0.99 + 0.005
+    assert 0.93 - 0.005 <= l_surface <= 0.96 + 0.005
     ds, rep = blend([ex["neo_brutalist"]])
     assert rep.counter_theme == "derived"
     assert ds.base_mode == "light"
-    assert 0.11 <= rgb_to_oklch(hex_to_rgb(ds.dark.background))[0] <= 0.17
-    assert 0.17 <= rgb_to_oklch(hex_to_rgb(ds.dark.surface))[0] <= 0.23
+    assert 0.12 - 0.005 <= rgb_to_oklch(hex_to_rgb(ds.dark.background))[0] <= 0.16 + 0.005
+    assert 0.18 - 0.005 <= rgb_to_oklch(hex_to_rgb(ds.dark.surface))[0] <= 0.22 + 0.005
 
 
 def test_captured_counter_theme(ex):
@@ -213,3 +213,47 @@ def test_determinism(ex):
     b = blend([ex["linear_dark"], ex["neo_brutalist"], ex["stripe_clean"]], [5, 3, 2])
     assert a[0].model_dump_json() == b[0].model_dump_json()
     assert a[1].model_dump_json() == b[1].model_dump_json()
+
+
+@pytest.mark.parametrize(
+    "raw,want",
+    [
+        ("matrix(1, 0, 0, 1, -2, -2)", "translate(-2px, -2px)"),
+        ("matrix(1, 0, 0, 1, 0, -4.50)", "translate(0px, -4.5px)"),
+        ("matrix(1.05, 0, 0, 1.05, 0, 0)", "scale(1.05)"),
+        ("matrix(1.1, 0, 0, 1, 0, 0)", "scale(1.1, 1)"),
+        ("matrix(1.05, 0, 0, 1.05, 0, -4)", "translate(0px, -4px) scale(1.05)"),
+        ("matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,3,4,0,1)", "translate(3px, 4px)"),
+        ("matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,3,4,5,1)", "translate3d(3px, 4px, 5px)"),
+        ("matrix(0.7, 0.7, -0.7, 0.7, 0, 0)", "matrix(0.7, 0.7, -0.7, 0.7, 0, 0)"),
+        ("none", None),
+    ],
+)
+def test_fmt_transform(raw, want):
+    from designdna.synthesizer.blender import _fmt_transform
+
+    assert _fmt_transform(raw) == want
+
+
+def test_component_hover_transform_readable_and_measured_flags(ex):
+    for e in ex.values():
+        ds, _ = blend([e])
+        for comp in (ds.components.button, ds.components.card, ds.components.input):
+            if comp.hover and comp.hover.transform:
+                assert "matrix" not in comp.hover.transform
+        if ds.motion.hover_transform:
+            assert "matrix" not in ds.motion.hover_transform
+        assert ds.motion.measured == (any(
+            s is not None and s.hover is not None for s in (e.components.button, e.components.input, e.components.card)
+        ))
+        assert ds.layout.container_measured == bool(e.layout.container_max_width)
+        assert ds.layout.grid_measured == bool(e.layout.grid_columns)
+
+
+def test_unmeasured_defaults_flagged(ex):
+    e = ex["stripe_clean"]
+    layout = e.layout.model_copy(update={"container_max_width": None, "grid_columns": []})
+    comps = e.components.model_copy(update={"button": None, "input": None, "card": None})
+    ds, _ = blend([e.model_copy(update={"layout": layout, "components": comps})])
+    assert ds.layout.container_measured is False and ds.layout.grid_measured is False
+    assert ds.motion.measured is False
