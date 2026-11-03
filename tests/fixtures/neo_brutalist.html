@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blockhead Studio</title>
+<style>
+:root {
+  --bg: #fffdf2;
+  --ink: #000000;
+  --accent: #ffe600;
+  --accent-2: #ff5fa2;
+  --border-w: 3px;
+  --radius: 0px;
+  --shadow-hard: 4px 4px 0 #000;
+  --space-unit: 8px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #fffdf2;
+  color: #000000;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 16px;
+  line-height: 24px;
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+header { background: #ffe600; border-bottom: 3px solid #000; }
+header .container { display: flex; justify-content: space-between; align-items: center; padding-top: 16px; padding-bottom: 16px; }
+.logo { font-weight: 700; font-size: 24px; }
+nav { display: flex; gap: 24px; }
+nav a { color: #000; font-weight: 700; text-decoration: underline; }
+.hero { padding: 96px 0 64px; }
+h1 { font-size: 56px; line-height: 64px; margin: 0 0 24px; font-weight: 700; }
+h2 { font-size: 32px; line-height: 40px; margin: 0 0 24px; }
+h3 { font-size: 20px; line-height: 32px; margin: 0 0 8px; }
+p { margin: 0 0 16px; font-size: 16px; line-height: 24px; }
+.hero p { max-width: 640px; }
+.actions { display: flex; gap: 16px; margin-top: 32px; }
+.btn {
+  display: inline-block;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  padding: 16px 32px;
+  background: #ffe600;
+  color: #000;
+  border: 3px solid #000;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 #000;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #000; }
+.btn-alt { background: #ff5fa2; }
+section { padding: 48px 0; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.card {
+  background: #ffffff;
+  border: 3px solid #000;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 #000;
+  padding: 24px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #000; }
+.card:nth-child(2) { background: #ff5fa2; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; text-align: center; }
+.stat { border: 3px solid #000; border-radius: 0; box-shadow: 4px 4px 0 #000; padding: 24px; background: #ffe600; }
+.stat strong { display: block; font-size: 40px; line-height: 48px; }
+form { display: grid; gap: 16px; max-width: 560px; }
+label { font-weight: 700; display: block; margin-bottom: 8px; }
+input[type="text"], input[type="email"], textarea {
+  width: 100%;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 16px;
+  line-height: 24px;
+  padding: 16px;
+  background: #ffffff;
+  color: #000;
+  border: 3px solid #000;
+  border-radius: 0;
+}
+textarea { min-height: 128px; }
+code { background: #000; color: #ffe600; padding: 0 8px; font-family: "Courier New", Courier, monospace; }
+footer { border-top: 3px solid #000; padding: 48px 0; margin-top: 48px; background: #ff5fa2; }
+@media (max-width: 768px) {
+  .cards, .stats { grid-template-columns: 1fr; }
+  h1 { font-size: 40px; line-height: 48px; }
+  .actions { flex-direction: column; }
+}
+@media (min-width: 1024px) {
+  .hero { padding-top: 128px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="logo">BLOCKHEAD</div>
+    <nav>
+      <a href="#work">Work</a>
+      <a href="#stats">Numbers</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <div class="container hero">
+    <h1>Loud boxes for loud ideas.</h1>
+    <p>We build raw, chunky interfaces that refuse to whisper. Try <code>npm run bold</code> and see.</p>
+    <div class="actions">
+      <button class="btn" type="button">Start a project</button>
+      <button class="btn btn-alt" type="button">See the work</button>
+    </div>
+  </div>
+  <section id="work">
+    <div class="container">
+      <h2>What we make</h2>
+      <div class="cards">
+        <div class="card"><h3>Posters</h3><p>Big type, flat color and hard edges for every wall you own.</p></div>
+        <div class="card"><h3>Websites</h3><p>Sturdy pages with thick lines that load fast and read faster.</p></div>
+        <div class="card"><h3>Systems</h3><p>Small rule sets that keep a whole product looking blunt.</p></div>
+        <div class="card"><h3>Workshops</h3><p>Two days of cutting, pasting and arguing about grids.</p></div>
+      </div>
+    </div>
+  </section>
+  <section id="stats">
+    <div class="container">
+      <div class="stats">
+        <div class="stat"><strong>120</strong>projects</div>
+        <div class="stat"><strong>48</strong>clients</div>
+        <div class="stat"><strong>12</strong>awards</div>
+        <div class="stat"><strong>3px</strong>borders</div>
+      </div>
+    </div>
+  </section>
+  <section id="contact">
+    <div class="container">
+      <h2>Say hello</h2>
+      <form onsubmit="return false">
+        <div><label for="n">Name</label><input id="n" type="text" placeholder="Your name"></div>
+        <div><label for="e">Email</label><input id="e" type="email" placeholder="you@example.com"></div>
+        <div><label for="m">Message</label><textarea id="m" placeholder="Tell us more"></textarea></div>
+        <button class="btn" type="submit">Send it</button>
+      </form>
+    </div>
+  </section>
+</main>
+<footer>
+  <div class="container"><p>Blockhead Studio. Made with thick lines and no apologies.</p></div>
+</footer>
+</body>
+</html>

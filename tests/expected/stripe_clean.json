@@ -1,0 +1,33 @@
+{
+  "fixture": "stripe_clean.html",
+  "natural_mode": "light",
+  "dominant_background": "#f6f9fc",
+  "has_color_scheme_query": true,
+  "counter_background": "#0a1929",
+  "colors": {
+    "background": "#f6f9fc",
+    "text_primary": {"any_of": ["#0a2540", "#425466"]},
+    "accent": "#635bff",
+    "border": "#e3e8ee"
+  },
+  "palette_includes": ["#f6f9fc", "#635bff"],
+  "fonts": {
+    "body_family": "Helvetica Neue",
+    "display_family": "Helvetica Neue",
+    "mono_family": "Menlo",
+    "body_is_monospace": false
+  },
+  "components": {
+    "button": {"radius_px": 12, "has_backdrop": false},
+    "card": {"radius_px": 16, "border_width_px": 0, "has_shadow": true, "has_backdrop": false},
+    "input": {"radius_px": 12, "border_width_px": 1}
+  },
+  "shadow_style": "layered",
+  "hover": {"button": {"transform_changes": false, "background_changes": true, "shadow_changes": true}},
+  "tokens": {"include": ["--page-bg", "--accent"], "exclude_prefixes": ["--tw-"]},
+  "gradients_min": 1,
+  "spacing_base": 8,
+  "container_max_width_px": 1100,
+  "breakpoints_include": [800, 1200],
+  "overlays": {"cookie_banner_removed": true, "header_position": "sticky"}
+}

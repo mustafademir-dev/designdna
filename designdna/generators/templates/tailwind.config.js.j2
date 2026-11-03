@@ -1,0 +1,71 @@
+/** DesignDNA tailwind.config.js (Tailwind v3) - generated. Colors reference variables.css. */
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: ["selector", '&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *)'],
+  content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx,vue,svelte,html}"],
+  theme: {
+    screens: {
+{% for k, v in breakpoints %}
+      {{ k|js }}: {{ (v ~ "px")|js }},
+{% endfor %}
+    },
+    extend: {
+      colors: {
+{% for k, v in colors.light %}
+        {{ k|js }}: {{ ("var(--color-" ~ k ~ ")")|js }},
+{% endfor %}
+      },
+      fontFamily: {
+        sans: [{{ ds.typography.sans.stack|js }}],
+        mono: [{{ ds.typography.mono.stack|js }}],
+        display: [{{ ds.typography.display.stack|js }}],
+      },
+      fontSize: {
+{% for k, v in sizes %}
+        {{ k|js }}: {{ (v ~ "px")|js }},
+{% endfor %}
+      },
+      fontWeight: {
+{% for k, v in weights %}
+        {{ k|js }}: {{ v|js }},
+{% endfor %}
+      },
+      lineHeight: {
+{% for k, v in line_heights %}
+        {{ k|js }}: {{ v|js }},
+{% endfor %}
+      },
+      letterSpacing: {
+{% for k, v in letter_spacing %}
+        {{ k|js }}: {{ (v ~ "em")|js }},
+{% endfor %}
+      },
+      spacing: {
+{% for k, v in spacing %}
+        {{ ("ds-" ~ k)|js }}: {{ (v ~ "px")|js }},
+{% endfor %}
+      },
+      borderRadius: {
+{% for k, v in radius %}
+        {{ ("DEFAULT" if k == "default" else k)|js }}: {{ (v ~ "px")|js }},
+{% endfor %}
+      },
+      boxShadow: {
+        sm: {{ ds.shadows.sm|js }},
+        DEFAULT: {{ ds.shadows.md|js }},
+        md: {{ ds.shadows.md|js }},
+        lg: {{ ds.shadows.lg|js }},
+      },
+      maxWidth: {
+        container: {{ (container ~ "px")|js }},
+      },
+      transitionDuration: {
+        DEFAULT: {{ (duration ~ "ms")|js }},
+      },
+      transitionTimingFunction: {
+        DEFAULT: {{ ds.motion.easing|js }},
+      },
+    },
+  },
+  plugins: [],
+};
