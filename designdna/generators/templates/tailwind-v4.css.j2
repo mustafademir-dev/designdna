@@ -1,0 +1,40 @@
+/* DesignDNA tailwind-v4.css - generated. Usage: @import "tailwindcss"; @import "./tailwind-v4.css"; */
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+{% for k, v in colors.light %}
+  --color-{{ k }}: {{ v }};
+{% endfor %}
+
+  --font-sans: {{ ds.typography.sans.stack }};
+  --font-mono: {{ ds.typography.mono.stack }};
+  --font-display: {{ ds.typography.display.stack }};
+{% for k, v in sizes %}
+  --text-{{ k }}: {{ v }}px;
+{% endfor %}
+{% for k, v in weights %}
+  --font-weight-{{ k }}: {{ v }};
+{% endfor %}
+{% for k, v in letter_spacing %}
+  --tracking-{{ k }}: {{ v }}em;
+{% endfor %}
+{% for k, v in radius %}
+  --radius-{{ k }}: {{ v }}px;
+{% endfor %}
+  --shadow-sm: {{ ds.shadows.sm }};
+  --shadow-md: {{ ds.shadows.md }};
+  --shadow-lg: {{ ds.shadows.lg }};
+{% for k, v in breakpoints %}
+  --breakpoint-{{ k }}: {{ v }}px;
+{% endfor %}
+  --container-max: {{ container }}px;
+  --default-transition-duration: {{ duration }}ms;
+  --default-transition-timing-function: {{ ds.motion.easing }};
+}
+
+.dark,
+[data-theme="dark"] {
+{% for k, v in colors.dark %}
+  --color-{{ k }}: {{ v }};
+{% endfor %}
+}
