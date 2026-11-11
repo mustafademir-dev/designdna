@@ -40,7 +40,7 @@ from designdna.utils.color_math import (
 logger = logging.getLogger(__name__)
 
 ELIGIBILITY_THRESHOLD = 0.2
-_EPS = 1e-9
+NEUTRAL_ACCENT_MAX_CHROMA = 0.03
 
 ROLE_ORDER = (
     "background",
@@ -319,13 +319,40 @@ class _Themes:
                 )
         return adjusted
 
+    def _neutral_accent(self, mode: ThemeMode, accent: str, bg: str) -> str:
+        """Siyah-beyaz sitelerin vurgusu (örn. koyu temada beyaz buton) zıt temaya
+        aynen taşınınca zeminde kaybolur. Renksiz (C < 0.03) ve zeminden ayrışmayan
+        (< 3:1) vurgunun L değeri ters çevrilir; renkli vurgulara dokunulmaz (D19)."""
+        l, c, h = _to_lch(accent)
+        before = _min_ratio(accent, [bg])
+        if c >= NEUTRAL_ACCENT_MAX_CHROMA or before >= 3.0:
+            return accent
+        flipped = _from_lch((1.0 - l, c, h))
+        after = _min_ratio(flipped, [bg])
+        if after <= before:
+            return accent
+        self.fixes.append(
+            ContrastFix(
+                theme=mode,
+                role="accent",
+                against="background",
+                original=accent,
+                adjusted=flipped,
+                ratio_before=round(before, 4),
+                ratio_after=round(after, 4),
+                target=3.0,
+                achieved=after >= 3.0,
+            )
+        )
+        return flipped
+
     def finalize(self, mode: ThemeMode, c: dict[str, str]) -> ThemeColors:
         bg, surface = c["background"].lower(), c["surface"].lower()
         bs, bs_names = [bg, surface], ["background", "surface"]
         text_primary = self._fix(mode, "text-primary", c["text_primary"], bs_names, bs, 4.5)
         text_muted = self._fix(mode, "text-muted", c["text_muted"], bs_names, bs, 4.5)
         border = self._fix(mode, "border", c["border"], bs_names, bs, 3.0)
-        accent = c["accent"].lower()
+        accent = self._neutral_accent(mode, c["accent"].lower(), bg)
         accent_fg = _best_foreground(accent)
         ring = self._fix(mode, "ring", accent, bs_names, bs, 3.0)
         secondary = _shift_l(surface, -0.04 if mode == "light" else 0.04)
