@@ -300,3 +300,15 @@ def test_ranked_text_tokens_pick_primary_not_quaternary():
     a = mine_colors(s, tokens)
     assert a.roles.text_primary.hex == "#ededef"
     assert a.roles.text_muted.hex in ("#62666d", "#8a8f98")
+
+
+def test_surface_ignores_opposite_tone_sections():
+    # Mercury tarzı: koyu hero zemini + beyaz bölüm kutuları. Beyaz kutu "yüzey"
+    # sayılırsa hiçbir metin rengi iki zeminde birden okunamaz.
+    s = dark_page()
+    s.elements.append(el(6, 1, "div", bg="rgb(255, 255, 255)", area=400_000))
+    s.elements.append(el(7, 6, "h3", text=30, color="rgb(10, 10, 12)", area=9000))
+    s.elements.append(el(8, 6, "p", text=60, color="rgb(60, 60, 70)", area=20000))
+    a = mine_colors(s)
+    from designdna.utils.color_math import rgb_to_oklch
+    assert abs(a.roles.surface.oklch[0] - rgb_to_oklch(hex_to_rgb("#0a0a0c"))[0]) <= 0.2
