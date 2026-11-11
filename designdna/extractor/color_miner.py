@@ -260,6 +260,9 @@ def _cluster_samples(samples: list[_Sample]) -> list[ColorCluster]:
     return cluster_colors([(h, w) for h, w, _ in samples])
 
 
+_MUTED_RANKS = ("secondary", "tertiary", "quaternary", "disabled", "placeholder", "faint", "dim")
+
+
 def _token_role(name: str) -> str | None:
     n = name.lower().lstrip("-")
     parts = [p for p in re.split(r"[^a-z0-9]+", n) if p]
@@ -268,6 +271,14 @@ def _token_role(name: str) -> str | None:
         return "border"
     if "muted" in n or "subtle" in parts:
         return "text-muted" if is_fg else None
+    # Açık metin token'ları (--color-text-primary, --text-tertiary, --fg-secondary ...):
+    # sıralama kelimesi rolü belirler. "--primary-foreground" gibi bileşen
+    # ön plan renkleri ("text"/"fg"/"ink" içermez) bu kurala girmez.
+    explicit_text = "text" in parts or "fg" in parts or "ink" in parts
+    if explicit_text and any(p in _MUTED_RANKS for p in parts):
+        return "text-muted"
+    if explicit_text and "primary" in parts:
+        return "text-primary"
     if is_fg:
         blocked = ("primary", "accent", "card", "popover", "secondary", "destructive", "brand", "surface", "panel")
         return None if any(w in n for w in blocked) else "text-primary"

@@ -283,3 +283,20 @@ def test_sample_snapshot():
 def test_deterministic_twice():
     s = dark_page()
     assert mine_colors(s).model_dump_json() == mine_colors(s).model_dump_json()
+
+
+def test_ranked_text_tokens_pick_primary_not_quaternary():
+    # Linear tarzı adlandırma: --color-text-primary/secondary/tertiary/quaternary.
+    # "primary" kelimesi bileşen rengi sanılıp elenmemeli; sıralı soluk tonlar
+    # ana metin rengi olarak seçilmemeli.
+    s = dark_page()
+    s.elements.append(el(6, 2, "small", text=20, color="rgb(98, 102, 109)", area=6000))
+    tokens = [
+        TokenVar(name="--color-text-quaternary", value="#62666d", kind="color", selector=":root"),
+        TokenVar(name="--color-text-tertiary", value="#8a8f98", kind="color", selector=":root"),
+        TokenVar(name="--color-text-primary", value="#ededef", kind="color", selector=":root"),
+        TokenVar(name="--primary-foreground", value="#ffffff", kind="color", selector=":root"),
+    ]
+    a = mine_colors(s, tokens)
+    assert a.roles.text_primary.hex == "#ededef"
+    assert a.roles.text_muted.hex in ("#62666d", "#8a8f98")
