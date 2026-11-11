@@ -260,6 +260,7 @@ def _cluster_samples(samples: list[_Sample]) -> list[ColorCluster]:
     return cluster_colors([(h, w) for h, w, _ in samples])
 
 
+SURFACE_MAX_DELTA_L = 0.2
 _MUTED_RANKS = ("secondary", "tertiary", "quaternary", "disabled", "placeholder", "faint", "dim")
 
 
@@ -397,13 +398,24 @@ def mine_colors(snapshot: RawSnapshot, tokens: list[TokenVar] | None = None) -> 
     background = _mk_token(bg_hex, bg_share, None)
 
     # ---- surface
+    # Yüzey, zeminle aynı açıklık bölgesinde olmalı: koyu hero + beyaz bölümler gibi
+    # karışık sayfalarda zıt tondaki bölüm arka planı "yüzey" sayılmaz; aksi halde
+    # hiçbir metin rengi iki zeminde birden okunamaz.
+    bg_l = rgb_to_oklch(bg_rgb)[0]
+
+    def _near_bg_l(hx: str) -> bool:
+        return abs(rgb_to_oklch(hex_to_rgb(hx))[0] - bg_l) <= SURFACE_MAX_DELTA_L
+
+    surface_samples = [s for s in surface_samples if _near_bg_l(s[0])]
     surf_pool = [c for c in _cluster_samples(surface_samples) if _de(c.hex, bg_hex) >= CLUSTER_DELTA_E]
     if not surf_pool:
         relaxed = [s for s in surface_samples if _de(s[0], bg_hex) >= _SURFACE_RELAXED_DELTA_E]
         surf_pool = _cluster_samples(relaxed)
     surf_raw = _raw_map(surface_samples)
     tmatch = _token_match(
-        tok.get("surface", []), surf_pool, accept=lambda h: _de(h, bg_hex) >= CLUSTER_DELTA_E
+        tok.get("surface", []),
+        surf_pool,
+        accept=lambda h: _de(h, bg_hex) >= CLUSTER_DELTA_E and _near_bg_l(h),
     )
     if tmatch is not None:
         surface = _mk_token(tmatch[0], tmatch[2], tmatch[1])

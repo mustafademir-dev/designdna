@@ -257,3 +257,17 @@ def test_unmeasured_defaults_flagged(ex):
     ds, _ = blend([e.model_copy(update={"layout": layout, "components": comps})])
     assert ds.layout.container_measured is False and ds.layout.grid_measured is False
     assert ds.motion.measured is False
+
+
+def test_neutral_accent_flips_when_invisible_on_background():
+    # Vercel tarzı: koyu temada beyaz buton, açık temaya aynen taşınınca kaybolur.
+    from designdna.synthesizer.blender import _Themes
+
+    t = _Themes()
+    assert t._neutral_accent("light", "#ffffff", "#f4f4ff") != "#ffffff"
+    assert t.fixes and t.fixes[-1].role == "accent" and t.fixes[-1].achieved
+    # Renkli vurgu ve zeminden zaten ayrışan nötr vurgu değişmez.
+    t2 = _Themes()
+    assert t2._neutral_accent("light", "#ffe600", "#ffffff") == "#ffe600"
+    assert t2._neutral_accent("dark", "#ffffff", "#0a0a0c") == "#ffffff"
+    assert not t2.fixes
